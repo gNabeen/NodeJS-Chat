@@ -1,14 +1,13 @@
-# NodeJS
-Simple chat application using Node.js and socket.io
+# Simple chat application using Node.js and socket.io
  
 # Supported commands:
-  /leave : to leave chatroom and refresh page
+  /leave : to leave chatroom and refresh page <br>
     more coming...
     
-# ToDo:
-  save session id and proper authorization
-  kick/ban feature
-  better UI
+# ToDo: 
+  save session id and proper authorization <br>
+  kick/ban feature <br>
+  better UI <br>
   notification feature
   
   # Thanks
