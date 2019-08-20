@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+ <title>IO chat</title>
+ <link rel = "stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"> 
+ <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+ <script src="https://code.jquery.com/jquery-latest.min.js"></script>
+ <script src="https://code.jquery.com/ui/1.11.3/jquery-ui.js"></script>
+ <script src="/socket.io/socket.io.js"></script>
+ <script src="/scroll.js"></script>
+</head>
+<body>
+  <style>
+    body{
+      margin-top: 30px;
+    }
+    input:focus, select:focus, textarea:focus, button:focus {
+      outline: none;
+      outline-width: 0;
+    }
+    ul{
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    ul li{
+      display:inline-block;
+      clear: both;
+      padding: 20px;
+      border-radius: 30px;
+      margin-bottom: 2px;
+      font-family: Helvetica, Arial, sans-serif;
+    }
+    .him{
+      background: #eee;
+      float: left;
+      word-wrap: break-word;
+    }
+
+    .me{
+      float: right;
+      background: #0084ff;
+      color: #fff;
+      word-wrap: break-word;
+    }
+
+    .him + .me{
+      border-bottom-right-radius: 5px;
+    }
+
+    .me + .me{
+      border-top-right-radius: 5px;
+      border-bottom-right-radius: 5px;
+    }
+
+    .me:last-of-type {
+      border-bottom-right-radius: 30px;
+    }
+    #userFormArea{
+      display:;
+    }
+    #messageArea{
+      position: fixed;
+      left: 0;           
+      right: 0; 
+      margin: auto;
+      width: 100%;
+      max-width: 100%;
+      padding-right: 2px;
+      padding-left: 2px;
+      z-index: 10000;
+      height: 85%; 
+      overflow-y: auto;
+    }
+    .footer{
+      display: none;
+      position:fixed;
+      bottom:0;
+      padding-left: 2px;
+      padding-right: 2px;
+      width:100%;
+      height:45px;
+      z-index: 10000;
+    }
+    .sitInCorner {
+      display: none;
+      position:absolute;
+      top:5px;
+      right:0;
+      padding-right: 2px;
+    }
+    input[type=text] {
+      border: none;
+      border-bottom: 2px solid skyblue;
+      width: 100%;
+      height: 40px;
+    }
+    input[type="submit"] {
+      /*height: 25px;
+      width: 50px;*/
+      background-color:  #e7e7e7;
+    }
+    .system{
+      float: left;
+      text-align: center;
+      color: #e7e7e7;
+      display: inline-block;
+      word-wrap: break-word;
+    }
+
+    .bounce {
+      position:fixed;
+      left:50%;
+      bottom:0;
+      margin-top:-25px;
+      margin-left:-25px;
+      height:50px;
+      width:50px;
+      -webkit-animation:bounce 1s infinite;
+    }
+    
+    @-webkit-keyframes bounce {
+      0%       { bottom:5px; }
+      25%, 75% { bottom:15px; }
+      50%      { bottom:20px; }
+      100%     {bottom:0;}
+    }
+  </style>
+
+  <div class = "container">
+   <div id = "userFormArea" class= "">
+     <form id = "userForm"> 
+       <div class = "form-group">
+        <input class = "" type="text" id = "username" placeholder="Username"> 
+        <input type="submit" class = "btn" value = "Login"/>
+      </div>
+    </form>
+
+  </div>
+
+  <div class="sitInCorner">
+    <!-- <button style="border: none; height: 100%; width: 100%"> <div class="show" style="color:green" align="center">Online</button> -->
+      <button a href="" id="openFAQ" class="OpenTopMessage" style="color: green" >Online</a>
+      </div>
+
+      <div id="details" class="alert alert-info" style="display: none; border-radius: 30px; padding-top: 2px; padding-bottom: 2px">
+        <ul class = "list-group-flush" id = "users" style="text-align: center;"> </ul>
+      </div>
+
+      <ul class = "" id = "messageArea"/>
+      <div class="chat" id = "chat"> </div>
+      <form id = "messageForm" class="footer"> 
+       <div class="input-group">
+         <input type="text" class="" id = "message" placeholder="message...">
+         <span class="input-group-btn">
+           <input type="submit" class = "btn" value = "Send"/>
+         </span>
+       </div>
+     </form>
+   </div>
+   <script>
+    $(function(){
+     var socket = io.connect();
+     var $usersList = $('#usersList');
+     var $messageForm = $('#messageForm');
+     var $message = $('#message');
+     var $chat = $('#chat');
+     var $userFormArea = $('#userFormArea');
+     var $userForm = $('#userForm');
+     var $messageArea = $('#messageArea');
+     var $users = $('#users');
+     var $username = $('#username');
+     var $online = $('.sitInCorner');
+     var $footer = $('.footer');
+
+     $messageForm.submit(function(e){
+      e.preventDefault();
+      if(!$message.val())
+      {
+        $( ".footer" ).effect( "shake" );
+      }
+      else if($message.val()=="/leave")
+      {
+        socket.emit('leave', $thisisme);
+        $("#messageArea").slideToggle("slow");
+        $(".sitInCorner").slideToggle("slow");
+        location.reload(true);
+      }
+      else {
+        socket.emit('send message', $message.val());
+      }
+      $message.val('');
+    });
+
+     socket.on('new message', function(data){
+      if(data.user==$thisisme){
+        $chat.append('<li class = "me">' + data.msg + '</li>');
+      }
+      else if(!data.user || data.user=="+leave")
+      {
+        $chat.append('<li class = "system"><strong> &#8594; </strong> ' + data.msg + '</li></br>');
+      }
+      else {
+        $chat.append('<li class = "him"><strong>'+data.user+'</strong>: ' + data.msg + '</li>');
+      }
+      $('#messageArea').animate({scrollTop: $('#messageArea').prop("scrollHeight")}, 500);
+    });
+
+     $userForm.submit(function(e){
+      e.preventDefault();
+      $thisisme=$username.val();
+      socket.emit('new user', $username.val(),function(data){
+       if(data){
+        $userFormArea.hide();
+        $footer.show();
+        $messageArea.show();
+        $online.show();
+
+      }
+    });
+      $username.val('');
+    });
+     socket.on('get users', function(data){
+      var html = '';
+      for (i = 0; i< data.length; i++){
+       html +='<li class = "list-group-flush-item" >' + data[i]+ '</li></br>';
+       $('#usersList').animate({scrollTop: $('#usersList').prop("scrollHeight")}, 500);
+     }
+     $users.html(html);
+   });
+     socket.on('kick'), function(data){
+      $chat.append('<li class = "system"><strong> &#8594; </strong> ' + data.msg + '</li></br>');
+    }
+  });
+
+    $(".show").click(function() 
+    {
+      $(".list-group").slideToggle();
+    });
+    $(function(){
+      $(".OpenTopMessage").click(function () {
+        $("#details").slideToggle("slow");
+      });
+    });
+  </script>
+
+</body>
+</html>
