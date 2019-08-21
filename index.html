@@ -57,9 +57,6 @@
     .me:last-of-type {
       border-bottom-right-radius: 30px;
     }
-    #userFormArea{
-      display:;
-    }
     #messageArea{
       position: fixed;
       left: 0;           
@@ -69,11 +66,11 @@
       max-width: 100%;
       padding-right: 2px;
       padding-left: 2px;
-      z-index: 10000;
+/*      z-index: 10000;*/
       height: 85%; 
       overflow-y: auto;
     }
-    .footer{
+    #messageForm{
       display: none;
       position:fixed;
       bottom:0;
@@ -81,11 +78,11 @@
       padding-right: 2px;
       width:100%;
       height:45px;
-      z-index: 10000;
+      z-index: 1000;
     }
     .sitInCorner {
       display: none;
-      position:absolute;
+      position:fixed;
       top:5px;
       right:0;
       padding-right: 2px;
@@ -94,12 +91,14 @@
       border: none;
       border-bottom: 2px solid skyblue;
       width: 100%;
+      flex-direction: right;
       height: 40px;
     }
     input[type="submit"] {
       /*height: 25px;
       width: 50px;*/
       background-color:  #e7e7e7;
+      right: 0;
     }
     .system{
       float: left;
@@ -140,110 +139,112 @@
   </div>
 
   <div class="sitInCorner">
-    <!-- <button style="border: none; height: 100%; width: 100%"> <div class="show" style="color:green" align="center">Online</button> -->
-      <button a href="" id="openFAQ" class="OpenTopMessage" style="color: green" >Online</a>
-      </div>
+    <button a href="" id="openFAQ" class="OpenTopMessage" style="color: green" >Online</a>
+    </div>
 
-      <div id="details" class="alert alert-info" style="display: none; border-radius: 30px; padding-top: 2px; padding-bottom: 2px">
-        <ul class = "list-group-flush" id = "users" style="text-align: center;"> </ul>
-      </div>
+    <div id="details" class="alert alert-info" style="display: none; border-radius: 30px; padding-top: 2px; padding-bottom: 2px"/>
+    <ul class = "list-group-flush" id = "users" style="text-align: center;"/> </ul>
+  </div>
 
-      <ul class = "" id = "messageArea"/>
-      <div class="chat" id = "chat"> </div>
-      <form id = "messageForm" class="footer"> 
-       <div class="input-group">
-         <input type="text" class="" id = "message" placeholder="message...">
-         <span class="input-group-btn">
-           <input type="submit" class = "btn" value = "Send"/>
-         </span>
-       </div>
-     </form>
+  <ul class = "" id = "messageArea">
+  <div class="chat" id = "chat"> </div>
+</ul>
+</div>
+<form id = "messageForm"> 
+   <div class="input-group">
+     <input type="text" class="" id = "message" placeholder="message...">
+     <span class="input-group-btn">
+       <input type="submit" class = "btn" value = "Send"/>
+     </span>
    </div>
-   <script>
-    $(function(){
-     var socket = io.connect();
-     var $usersList = $('#usersList');
-     var $messageForm = $('#messageForm');
-     var $message = $('#message');
-     var $chat = $('#chat');
-     var $userFormArea = $('#userFormArea');
-     var $userForm = $('#userForm');
-     var $messageArea = $('#messageArea');
-     var $users = $('#users');
-     var $username = $('#username');
-     var $online = $('.sitInCorner');
-     var $footer = $('.footer');
+ </form>
+<script>
+  $(function(){
+   var socket = io.connect();
+   var $usersList = $('#usersList');
+   var $messageForm = $('#messageForm');
+   var $message = $('#message');
+   var $chat = $('#chat');
+   var $userFormArea = $('#userFormArea');
+   var $userForm = $('#userForm');
+   var $messageArea = $('#messageArea');
+   var $users = $('#users');
+   var $username = $('#username');
+   var $online = $('.sitInCorner');
 
-     $messageForm.submit(function(e){
-      e.preventDefault();
-      if(!$message.val())
-      {
-        $( ".footer" ).effect( "shake" );
-      }
-      else if($message.val()=="/leave")
-      {
-        socket.emit('leave', $thisisme);
-        $("#messageArea").slideToggle("slow");
-        $(".sitInCorner").slideToggle("slow");
-        location.reload(true);
-      }
-      else {
-        socket.emit('send message', $message.val());
-      }
-      $message.val('');
-    });
-
-     socket.on('new message', function(data){
-      if(data.user==$thisisme){
-        $chat.append('<li class = "me">' + data.msg + '</li>');
-      }
-      else if(!data.user || data.user=="+leave")
-      {
-        $chat.append('<li class = "system"><strong> &#8594; </strong> ' + data.msg + '</li></br>');
-      }
-      else {
-        $chat.append('<li class = "him"><strong>'+data.user+'</strong>: ' + data.msg + '</li>');
-      }
-      $('#messageArea').animate({scrollTop: $('#messageArea').prop("scrollHeight")}, 500);
-    });
-
-     $userForm.submit(function(e){
-      e.preventDefault();
-      $thisisme=$username.val();
-      socket.emit('new user', $username.val(),function(data){
-       if(data){
-        $userFormArea.hide();
-        $footer.show();
-        $messageArea.show();
-        $online.show();
-
-      }
-    });
-      $username.val('');
-    });
-     socket.on('get users', function(data){
-      var html = '';
-      for (i = 0; i< data.length; i++){
-       html +='<li class = "list-group-flush-item" >' + data[i]+ '</li></br>';
-       $('#usersList').animate({scrollTop: $('#usersList').prop("scrollHeight")}, 500);
-     }
-     $users.html(html);
-   });
-     socket.on('kick'), function(data){
-      $chat.append('<li class = "system"><strong> &#8594; </strong> ' + data.msg + '</li></br>');
+   $messageForm.submit(function(e){
+    e.preventDefault();
+    if(!$message.val())
+    {
+      $messageForm.effect( "shake" );
     }
+    else if($message.val()=="/leave")
+    {
+      socket.emit('leave', $thisisme);
+      $("#messageArea").slideToggle("slow");
+      $(".sitInCorner").slideToggle("slow");
+      location.reload(true);
+    }
+    else {
+      socket.emit('send message', $message.val());
+    }
+    $message.val('');
   });
 
-    $(".show").click(function() 
+   socket.on('new message', function(data){
+    if(data.user==$thisisme){
+      $chat.append('<li class = "me">' + data.msg + '</li>');
+    }
+    else if(!data.user || data.user=="+leave")
     {
-      $(".list-group").slideToggle();
+      $chat.append('<li class = "system"><strong> &#8594; </strong> ' + data.msg + '</li></br>');
+    }
+    else {
+      $chat.append('<li class = "him"><strong>'+data.user+'</strong>: ' + data.msg + '</li>');
+    }
+    $('#messageArea').animate({scrollTop: $('#messageArea').prop("scrollHeight")}, 500);
+  });
+
+   $userForm.submit(function(e){
+    e.preventDefault();
+    if($username.val().length>0)
+    {
+    $thisisme=$username.val();
+    socket.emit('new user', $username.val(),function(data){
+     if(data){
+      $userFormArea.hide();
+      $messageForm.slideToggle();
+      $messageArea.show();
+      $online.show();
+
+    }
+  });
+    $username.val('');
+  }
+  });
+   socket.on('get users', function(data){
+    var html = '';
+    for (i = 0; i< data.length; i++){
+     html +='<li class = "list-group-flush-item" >' + data[i]+ '</li></br>';
+     $('#usersList').animate({scrollTop: $('#usersList').prop("scrollHeight")}, 500);
+   }
+   $users.html(html);
+ });
+   socket.on('kick'), function(data){
+    $chat.append('<li class = "system"><strong> &#8594; </strong> ' + data.msg + '</li></br>');
+  }
+});
+
+  $(".show").click(function() 
+  {
+    $(".list-group").slideToggle();
+  });
+  $(function(){
+    $(".OpenTopMessage").click(function () {
+      $("#details").slideToggle("slow");
     });
-    $(function(){
-      $(".OpenTopMessage").click(function () {
-        $("#details").slideToggle("slow");
-      });
-    });
-  </script>
+  });
+</script>
 
 </body>
 </html>
