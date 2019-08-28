@@ -186,7 +186,7 @@
       location.reload(true);
     }
     else {
-      socket.emit('send message', $message.val());
+      socket.emit('send message', $message.val().replace(/(<([^>]+)>)/ig,""));
     }
     $message.val('');
   });
@@ -210,7 +210,7 @@
     if($username.val().length>0)
     {
     $thisisme=$username.val();
-    socket.emit('new user', $username.val(),function(data){
+    socket.emit('new user', $username.val().replace(/(<([^>]+)>)/ig,""),function(data){
      if(data){
       $userFormArea.hide();
       $messageForm.slideToggle();
